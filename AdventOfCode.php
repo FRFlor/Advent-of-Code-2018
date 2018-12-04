@@ -102,5 +102,63 @@ class DayTwo {
     }
 }
 
-$master = new DayTwo();
-var_dump($master->secondStar());
+class DayThree {
+    private $input;
+    private $canvas;
+    const MAX_X = 1000;
+    const MAX_Y = 1000;
+
+    public function __construct()
+    {
+        $this->input = getDayThreeInputs();
+
+        for($i = 0; $i < self::MAX_X; $i++){
+            for($j = 0; $j < self::MAX_Y; $j++){
+                $this->canvas[$i][$j] = 0;
+            }
+        }
+    }
+
+    public function firstStar()
+    {
+        foreach ($this->input as $instruction) {
+            $this->draw($instruction);
+        }
+
+        return $this->countRepetitions();
+    }
+
+    protected function draw($instruction)
+    {
+        preg_match("/#\d+ @ (\d+),(\d+): (\d+)x(\d+)/",$instruction, $matches);
+        $startColumn = (int) $matches[1];
+        $startRow = (int) $matches[2];
+        $length = (int) $matches[3];
+        $height = (int) $matches[4];
+        $endColumn = $startColumn + $length;
+        $endRow = $startRow + $height;
+
+        for($column = $startColumn; $column < $endColumn; $column++){
+            for($row = $startRow; $row < $endRow; $row++){
+                $this->canvas[$column][$row]++;
+            }
+        }
+    }
+
+    protected function countRepetitions()
+    {
+        $repetitions = 0;
+        for($column = 0; $column < self::MAX_X; $column++){
+            for($row = 0; $row < self::MAX_Y; $row++){
+                if ($this->canvas[$column][$row] > 1) {
+                    $repetitions++;
+                }
+            }
+        }
+
+        return $repetitions;
+    }
+}
+
+$master = new DayThree();
+var_dump($master->firstStar());
