@@ -6,7 +6,7 @@ class DayOne {
 
     public function __construct()
     {
-        $this->input = $_SESSION['dayOneInput'];
+        $this->input = getDayOneInputs();
     }
 
     public function firstStar()
@@ -44,7 +44,7 @@ class DayTwo {
 
     public function __construct()
     {
-        $this->input = $_SESSION['dayTwoInput'];
+        $this->input = getDayTwoInputs();
     }
 
     public function firstStar()
@@ -101,7 +101,6 @@ class DayTwo {
         return implode(array_intersect(str_split($stringOne), str_split($stringTwo)));
     }
 }
-
 
 $master = new DayTwo();
 var_dump($master->secondStar());
