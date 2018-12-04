@@ -67,6 +67,19 @@ class DayTwo
         return $threeOfAKindCount * $twoOfAKindCount;
     }
 
+    public function secondStar()
+    {
+        foreach ($this->input as $baseString) {
+            foreach ($this->input as $otherString) {
+                // Find two strings that differ by only one character
+                if (similar_text($baseString, $otherString) - strlen($baseString) === -1) {
+                    // Return the common letters
+                    return $this->getCommonLetters($baseString, $otherString);
+                }
+            }
+        }
+    }
+
     protected function getRepetitionFootprint($string)
     {
         $characterCounts = array_count_values(str_split($string));
@@ -83,19 +96,6 @@ class DayTwo
             'hasTwoOfAKind' => $hasTwoOfAKind,
             'hasThreeOfAKind' => $hasThreeOfAKind
         ];
-    }
-
-    public function secondStar()
-    {
-        foreach ($this->input as $baseString) {
-            foreach ($this->input as $otherString) {
-                // Find two strings that differ by only one character
-                if (similar_text($baseString, $otherString) - strlen($baseString) === -1) {
-                    // Return the common letters
-                    return $this->getCommonLetters($baseString, $otherString);
-                }
-            }
-        }
     }
 
     protected function getCommonLetters($stringOne, $stringTwo)
