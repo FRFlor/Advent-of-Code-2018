@@ -203,7 +203,7 @@ class DayThree
 
 class DayFour {
     private $input;
-    static $guardsSchedule = []; // Using static so the data won't be allocated in Heap Memory nor the Stack, but rather in the Data Segment
+    private $guardsSchedule = [];
 
     public function __construct()
     {
@@ -269,10 +269,10 @@ class DayFour {
     protected function sortGuardsShifts()
     {
         foreach ($this->input as $line) {
-            array_push(self::$guardsSchedule, $this->parseInputLine($line));
+            array_push($this->guardsSchedule, $this->parseInputLine($line));
         }
 
-        usort(self::$guardsSchedule, function ($a, $b) {
+        usort($this->guardsSchedule, function ($a, $b) {
             return $b[0] < $a[0];
         });
     }
@@ -283,7 +283,7 @@ class DayFour {
         $startToSleep = null;
         $wakesUp = null;
         $guardId = null;
-        foreach (self::$guardsSchedule as $entry) {
+        foreach ($this->guardsSchedule as $entry) {
             if (strpos($entry[1], 'Guard') !== false) {
                 preg_match("/Guard #(\d+) .+/", $entry[1], $matches);
                 $guardId = (int) $matches[1];
@@ -329,7 +329,7 @@ class DayFour {
         $wakesUp = null;
 
         $isRightGuard = false;
-        foreach (self::$guardsSchedule as $entry) {
+        foreach ($this->guardsSchedule as $entry) {
             if (strpos($entry[1], 'Guard') !== false) {
                 preg_match("/Guard #(\d+) .+/", $entry[1], $matches);
                 $thisGuardId = (int) $matches[1];
@@ -376,7 +376,7 @@ class DayFour {
         $wakesUp = null;
 
         $guardsSleepTrack = [];
-        foreach (self::$guardsSchedule as $entry) {
+        foreach ($this->guardsSchedule as $entry) {
             if (strpos($entry[1], 'Guard') !== false) {
                 preg_match("/Guard #(\d+) .+/", $entry[1], $matches);
                 $guardId = $matches[1];
