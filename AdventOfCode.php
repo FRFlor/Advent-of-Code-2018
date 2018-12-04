@@ -1,7 +1,8 @@
 <?php
 include 'Inputs.php';
 
-class DayOne {
+class DayOne
+{
     private $input;
 
     public function __construct()
@@ -39,7 +40,8 @@ class DayOne {
     }
 }
 
-class DayTwo {
+class DayTwo
+{
     private $input;
 
     public function __construct()
@@ -70,8 +72,8 @@ class DayTwo {
         $characterCounts = array_count_values(str_split($string));
 
         $hasTwoOfAKind = count(array_filter($characterCounts, function ($count) {
-           return $count === 2;
-        })) > 0;
+                return $count === 2;
+            })) > 0;
 
         $hasThreeOfAKind = count(array_filter($characterCounts, function ($count) {
                 return $count === 3;
@@ -102,7 +104,8 @@ class DayTwo {
     }
 }
 
-class DayThree {
+class DayThree
+{
     private $input;
     private $canvas;
     const MAX_X = 1000;
@@ -112,8 +115,8 @@ class DayThree {
     {
         $this->input = getDayThreeInputs();
 
-        for($i = 0; $i < self::MAX_X; $i++){
-            for($j = 0; $j < self::MAX_Y; $j++){
+        for ($i = 0; $i < self::MAX_X; $i++) {
+            for ($j = 0; $j < self::MAX_Y; $j++) {
                 $this->canvas[$i][$j] = 0;
             }
         }
@@ -128,18 +131,36 @@ class DayThree {
         return $this->countRepetitions();
     }
 
-    protected function draw($instruction)
+    public function secondStar()
     {
-        preg_match("/#\d+ @ (\d+),(\d+): (\d+)x(\d+)/",$instruction, $matches);
-        $startColumn = (int) $matches[1];
-        $startRow = (int) $matches[2];
-        $length = (int) $matches[3];
-        $height = (int) $matches[4];
+        foreach ($this->input as $instruction) {
+            $this->draw($instruction);
+        }
+
+        return $this->getFirstIdWithoutIntersections();
+    }
+
+    protected function parseInstruction($instruction)
+    {
+        preg_match("/#(\d+) @ (\d+),(\d+): (\d+)x(\d+)/", $instruction, $matches);
+
+        $id = (int)$matches[1];
+        $startColumn = (int)$matches[2];
+        $startRow = (int)$matches[3];
+        $length = (int)$matches[4];
+        $height = (int)$matches[5];
         $endColumn = $startColumn + $length;
         $endRow = $startRow + $height;
 
-        for($column = $startColumn; $column < $endColumn; $column++){
-            for($row = $startRow; $row < $endRow; $row++){
+        return [$id, $startColumn, $endColumn, $startRow, $endRow];
+    }
+
+    protected function draw($instruction)
+    {
+        [$id, $startColumn, $endColumn, $startRow, $endRow] = $this->parseInstruction($instruction);
+
+        for ($column = $startColumn; $column < $endColumn; $column++) {
+            for ($row = $startRow; $row < $endRow; $row++) {
                 $this->canvas[$column][$row]++;
             }
         }
@@ -148,8 +169,8 @@ class DayThree {
     protected function countRepetitions()
     {
         $repetitions = 0;
-        for($column = 0; $column < self::MAX_X; $column++){
-            for($row = 0; $row < self::MAX_Y; $row++){
+        for ($column = 0; $column < self::MAX_X; $column++) {
+            for ($row = 0; $row < self::MAX_Y; $row++) {
                 if ($this->canvas[$column][$row] > 1) {
                     $repetitions++;
                 }
@@ -158,7 +179,27 @@ class DayThree {
 
         return $repetitions;
     }
+
+    protected function getFirstIdWithoutIntersections()
+    {
+        foreach ($this->input as $instruction) {
+            [$id, $startColumn, $endColumn, $startRow, $endRow] = $this->parseInstruction($instruction);
+
+            $hasNoIntersections = true;
+            for ($column = $startColumn; $column < $endColumn; $column++) {
+                for ($row = $startRow; $row < $endRow; $row++) {
+                    if ($this->canvas[$column][$row] > 1) {
+                        $hasNoIntersections = false;
+                    }
+                }
+            }
+
+            if ($hasNoIntersections) {
+                return $id;
+            }
+        }
+    }
 }
 
 $master = new DayThree();
-var_dump($master->firstStar());
+var_dump($master->secondStar());
