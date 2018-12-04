@@ -1,2 +1,3 @@
 *.php
 !AdventOfCode.php
+!Inputs.php
