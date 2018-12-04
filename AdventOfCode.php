@@ -239,6 +239,26 @@ class DayFour {
         return $mostSleptMinute * $greatestSleeper;
     }
 
+    public function secondStar()
+    {
+        // Find the minute most slept by the guard
+        $guardSleepDist = $this->getSleepDistributionForAllGuards();
+        $highestCount = 0;
+        $mostSleptMinute = null;
+        $sleepingGuard = null;
+        foreach ($guardSleepDist as $guardId => $minutes) {
+            foreach ($minutes as $minute => $count) {
+                if ($count > $highestCount) {
+                    $mostSleptMinute = $minute;
+                    $highestCount = $count;
+                    $sleepingGuard = $guardId;
+                }
+            }
+        }
+
+       return $sleepingGuard * $mostSleptMinute;
+    }
+
     protected function getMinutesDifference($date1, $date2)
     {
         $interval = $date1->diff($date2);
@@ -255,6 +275,51 @@ class DayFour {
         usort(self::$guardsSchedule, function ($a, $b) {
             return $b[0] < $a[0];
         });
+    }
+
+    protected function getSleepDistributionForAllGuards()
+    {
+        $minutes = [];
+        $startToSleep = null;
+        $wakesUp = null;
+        $guardId = null;
+        foreach (self::$guardsSchedule as $entry) {
+            if (strpos($entry[1], 'Guard') !== false) {
+                preg_match("/Guard #(\d+) .+/", $entry[1], $matches);
+                $guardId = (int) $matches[1];
+                $minutes[$guardId] = $minutes[$guardId] ?? [];
+            }
+            elseif (strpos($entry[1], 'falls') !== false) {
+                $startToSleep = $entry[0];
+            }
+            elseif (strpos($entry[1], 'wakes') !== false) {
+                $wakesUp = $entry[0];
+
+                $startHour = (int) $startToSleep->format("H");
+                $startMinute = (int) $startToSleep->format("i");
+                $endHour = (int) $wakesUp->format("H");
+                $endMinute = (int) $wakesUp->format("i");
+
+                $hour = $startHour;
+                $minute =  $startMinute;
+                while ($hour !== $endHour || $minute !== $endMinute) {
+                    $minutes[$guardId][$minute] = ($minutes[$guardId][$minute] ?? 0) + 1;
+
+                    // Increment Time
+                    $minute++;
+                    if ($minute > 59) {
+                        $hour++;
+                        $minute = 0;
+                        if ($hour > 23) {
+                            $hour = 0;
+                            $minute = 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $minutes;
     }
 
     protected function getSleepDistributionForGuard($guardId)
@@ -339,4 +404,4 @@ class DayFour {
 }
 
 $master = new DayFour();
-var_dump($master->firstStar());
+var_dump($master->secondStar());
