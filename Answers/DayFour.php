@@ -20,8 +20,8 @@ class DayFour
         $greatestSleeper = null;
         foreach ($guardsSleepAmount as $guardId => $sleepTime) {
             if ($sleepTime > $greatestSleep) {
-                $greatestSleeper = $guardId;
                 $greatestSleep = $sleepTime;
+                $greatestSleeper = $guardId;
             }
         }
 
@@ -31,8 +31,8 @@ class DayFour
         $mostSleptMinute = null;
         foreach ($minutesArray[$greatestSleeper] as $minute => $count) {
             if ($count > $highestCount) {
-                $mostSleptMinute = $minute;
                 $highestCount = $count;
+                $mostSleptMinute = $minute;
             }
         }
 
@@ -51,21 +51,14 @@ class DayFour
         foreach ($guardSleepDist as $guardId => $minutes) {
             foreach ($minutes as $minute => $count) {
                 if ($count > $highestCount) {
-                    $mostSleptMinute = $minute;
                     $highestCount = $count;
+                    $mostSleptMinute = $minute;
                     $sleepingGuard = $guardId;
                 }
             }
         }
 
         return $sleepingGuard * $mostSleptMinute;
-    }
-
-    protected function getMinutesDifference($date1, $date2)
-    {
-        $interval = $date1->diff($date2);
-
-        return $interval->h * 60 + $interval->i;
     }
 
     protected function sortGuardsShifts()
@@ -82,44 +75,29 @@ class DayFour
     protected function getSleepDistributionForGuards($targetGuardId = null)
     {
         $minutes = [];
-        $startToSleep = null;
+        $startsToSleep = null;
         $wakesUp = null;
         $thisGuardId = null;
 
         $isRightGuard = false;
         foreach ($this->guardsSchedule as $entry) {
-            if (strpos($entry[1], 'Guard') !== false) {
+            if ($this->isStartOfShift($entry)) {
                 preg_match("/Guard #(\d+) .+/", $entry[1], $matches);
                 $thisGuardId = (int)$matches[1];
                 $isRightGuard = ($targetGuardId === null || $thisGuardId === $targetGuardId);
-                if ($isRightGuard) {
-                    $minutes[$thisGuardId] = $minutes[$thisGuardId] ?? [];
-                }
-            } elseif (strpos($entry[1], 'falls') !== false && $isRightGuard) {
-                $startToSleep = $entry[0];
-            } elseif (strpos($entry[1], 'wakes') !== false && $isRightGuard) {
+
+            } elseif ($isRightGuard && $this->isStartOfSleep($entry)) {
+                $startsToSleep = $entry[0];
+
+            } elseif ($isRightGuard && $this->isStartOfWakingUp($entry)) {
+                $minutes[$thisGuardId] = $minutes[$thisGuardId] ?? [];
                 $wakesUp = $entry[0];
+                $clock = new Clock($startsToSleep, $wakesUp);
 
-                $startHour = (int)$startToSleep->format("H");
-                $startMinute = (int)$startToSleep->format("i");
-                $endHour = (int)$wakesUp->format("H");
-                $endMinute = (int)$wakesUp->format("i");
-
-                $hour = $startHour;
-                $minute = $startMinute;
-                while ($hour !== $endHour || $minute !== $endMinute) {
+                while (! $clock->isTimeUp()) {
+                    $minute = $clock->getMinute();
                     $minutes[$thisGuardId][$minute] = ($minutes[$thisGuardId][$minute] ?? 0) + 1;
-
-                    // Increment Time
-                    $minute++;
-                    if ($minute > 59) {
-                        $hour++;
-                        $minute = 0;
-                        if ($hour > 23) {
-                            $hour = 0;
-                            $minute = 0;
-                        }
-                    }
+                    $clock->increment();
                 }
             }
         }
@@ -130,20 +108,22 @@ class DayFour
     protected function getMinutesSleptByEachGuard()
     {
         $guardId = null;
-        $startToSleep = null;
+        $startsToSleep = null;
         $wakesUp = null;
 
         $guardsSleepTrack = [];
         foreach ($this->guardsSchedule as $entry) {
-            if (strpos($entry[1], 'Guard') !== false) {
+            if ($this->isStartOfShift($entry)) {
                 preg_match("/Guard #(\d+) .+/", $entry[1], $matches);
                 $guardId = $matches[1];
-            } elseif (strpos($entry[1], 'falls') !== false) {
-                $startToSleep = $entry[0];
-            } elseif (strpos($entry[1], 'wakes') !== false) {
+
+            } elseif ($this->isStartOfSleep($entry)) {
+                $startsToSleep = $entry[0];
+
+            } elseif ($this->isStartOfWakingUp($entry)) {
                 $wakesUp = $entry[0];
-                $guardsSleepTrack[$guardId] = ($guardsSleepTrack[$guardId] ?? 0) + $this->getMinutesDifference($startToSleep,
-                        $wakesUp);
+                $guardsSleepTrack[$guardId] =
+                    ($guardsSleepTrack[$guardId] ?? 0) + Clock::getMinutesDifference($startsToSleep, $wakesUp);
             }
         }
 
@@ -157,5 +137,67 @@ class DayFour
         $event = $matches[2];
 
         return [$time, $event];
+    }
+
+    protected function isStartOfShift($event)
+    {
+        return strpos($event[1], 'Guard') !== false;
+    }
+
+    protected function isStartOfSleep($event)
+    {
+        return strpos($event[1], 'falls') !== false;
+    }
+
+    protected function isStartOfWakingUp($event)
+    {
+        return strpos($event[1], 'wakes') !== false;
+    }
+}
+
+class Clock
+{
+    private $minute;
+    private $hour;
+    private $endHour;
+    private $endMinute;
+
+    public function __construct($startTime, $endTime)
+    {
+        $this->hour = (int)$startTime->format("H");
+        $this->minute = (int)$startTime->format("i");
+        $this->endHour = (int)$endTime->format("H");
+        $this->endMinute = (int)$endTime->format("i");
+    }
+
+    public function increment()
+    {
+        $this->minute++;
+
+        if ($this->minute > 59) {
+            $this->hour++;
+            $this->minute = 0;
+
+            if ($this->hour > 23) {
+                $this->hour = 0;
+            }
+        }
+    }
+
+    public function isTimeUp()
+    {
+        return $this->endHour === $this->hour && $this->endMinute === $this->minute;
+    }
+
+    public function getMinute()
+    {
+        return $this->minute;
+    }
+
+    public static function getMinutesDifference($date1, $date2)
+    {
+        $interval = $date1->diff($date2);
+
+        return $interval->h * 60 + $interval->i;
     }
 }
