@@ -72,6 +72,17 @@ class DayFour
         });
     }
 
+    /**
+     * Calculates the sleep distribution for a given guard.
+     * The sleep distribution is a histogram with the X axis representing the minutes in an hour (i.e [0, 59]) and
+     * the Y axis representing the number of times target guard has was sleeping during the X minute mark.
+     *
+     * @param null $targetGuardId - Optional parameter.
+     *  If null, the sleep distribution will be calculated for all guards.
+     *  If a guardId is provided, the sleep distribution will only be calculated for the targeted guard.
+     *
+     * @return array [ guardID => [ X => number of times guard slept on minute X, ... ], ... ]
+     */
     protected function getSleepDistributionForGuards($targetGuardId = null)
     {
         $minutes = [];
@@ -105,6 +116,11 @@ class DayFour
         return $minutes;
     }
 
+    /**
+     * Calculates the total amount of sleep time each guard has.
+     *
+     * @return array - [ guardId => total amount of minutes slept, ... ]
+     */
     protected function getMinutesSleptByEachGuard()
     {
         $guardId = null;
