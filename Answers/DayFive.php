@@ -26,15 +26,12 @@ class DayFive
         $smallestChainCount = null;
 
         foreach ($characters as  $character) {
-            fwrite(STDOUT, "$character: ...");
-            $regexPattern = "/[$character]+/i";
-            $newInput = preg_replace($regexPattern, '', $this->input);
+            $newInput = preg_replace("/[$character]+/i", '', $this->input);
             $chain = new Chain($newInput);
             $chain->react();
             if ($smallestChainCount === null || $smallestChainCount > $chain->length()) {
                 $smallestChainCount = $chain->length();
             }
-            fwrite(STDOUT, " Done! (Smallest count: $smallestChainCount)\n");
         }
 
         return $smallestChainCount;
@@ -60,8 +57,10 @@ class Chain
         {
             foreach ($this->upperChars as $upper) {
                 $lower = strtolower($upper);
-                $regexPattern = "/($upper$lower|$lower$upper)+/";
-                $this->source = preg_replace($regexPattern, '', $this->source);
+                // Obs: The regex OR operator has very low execution speed.
+                // Two chained preg_replace calls executes much faster than one with OR operator
+                $this->source = preg_replace("/($upper$lower)+/", '', $this->source);
+                $this->source = preg_replace("/($lower$upper)+/", '', $this->source);
             }
             $newLength = strlen($this->source);
 
