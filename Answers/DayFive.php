@@ -2,25 +2,48 @@
 
 class DayFive
 {
-    private $chain;
+    private $input;
 
     public function __construct()
     {
-        $this->chain = new Chain(getDayFiveInputs());
+        $this->input = getDayFiveInputs();
     }
 
     public function firstStar()
     {
-        do {
-            $reactionsInLoop = $this->chain->reactiveTransverse();
-        } while ($reactionsInLoop !== 0);
+        $chain = new Chain($this->input);
+        $chain->reactEverything();
 
-        return $this->chain->count();
+        return $chain->count();
+    }
+
+    public function secondStar()
+    {
+        $characters = array_unique(str_split(strtoupper(getDayFiveInputs())));
+        sort($characters);
+
+        $smallestChainCount = null;
+        $characterForSmallestChain = null;
+
+        foreach ($characters as  $character) {
+            fwrite(STDOUT, "$character: ...");
+            $regexPattern = "/[$character]+/i";
+            $newInput = preg_replace($regexPattern, '', $this->input);
+            $chain = new Chain($newInput);
+            $chain->reactEverything();
+            if ($smallestChainCount === null || $smallestChainCount > $chain->count()) {
+                $smallestChainCount = $chain->count();
+            }
+            fwrite(STDOUT, " Done! (Smallest count: $smallestChainCount)\n");
+        }
+
+        return $smallestChainCount;
     }
 }
 
 
-class Unit {
+class Unit
+{
     public $value;
     public $next;
     public $prev;
@@ -38,7 +61,8 @@ class Unit {
     }
 }
 
-class Chain {
+class Chain
+{
     private $start;
     private $end;
     private $count;
@@ -49,7 +73,7 @@ class Chain {
 
         $this->attachFirst($source[0]);
 
-        for ($i = 1; $i < strlen($source); $i++){
+        for ($i = 1; $i < strlen($source); $i++) {
             $this->attach($source[$i]);
         }
     }
@@ -79,12 +103,10 @@ class Chain {
         // If the unit was the first in the chain
         if ($previousUnit === null) {
             $nextUnit->prev = null;
-        }
-        // If the unit was the last in the chain
+        } // If the unit was the last in the chain
         elseif ($nextUnit === null) {
             $previousUnit->next = null;
-        }
-        // If the unit was not in one of the extremes
+        } // If the unit was not in one of the extremes
         else {
             $previousUnit->next = $nextUnit;
             $nextUnit->prev = $previousUnit;
@@ -92,6 +114,13 @@ class Chain {
 
         unset($unit);
         $this->count--;
+    }
+
+    public function reactEverything()
+    {
+        do {
+            $reactionsInLoop = $this->reactiveTransverse();
+        } while ($reactionsInLoop !== 0);
     }
 
     public function reactiveTransverse()
@@ -111,7 +140,7 @@ class Chain {
             }
 
             $currentUnit = $nextTarget;
-        } while ($currentUnit->next !== null);
+        } while ($currentUnit !== null && $currentUnit->next !== null);
 
         return $reactionsCount;
     }
