@@ -12,27 +12,27 @@ class DayFive
     public function firstStar()
     {
         $chain = new Chain($this->input);
-        $chain->reactEverything();
 
-        return $chain->count();
+        $chain->react();
+
+        return $chain->length();
     }
 
     public function secondStar()
     {
-        $characters = array_unique(str_split(strtoupper(getDayFiveInputs())));
+        $characters = array_unique(str_split(strtoupper($this->input)));
         sort($characters);
 
         $smallestChainCount = null;
-        $characterForSmallestChain = null;
 
         foreach ($characters as  $character) {
             fwrite(STDOUT, "$character: ...");
             $regexPattern = "/[$character]+/i";
             $newInput = preg_replace($regexPattern, '', $this->input);
             $chain = new Chain($newInput);
-            $chain->reactEverything();
-            if ($smallestChainCount === null || $smallestChainCount > $chain->count()) {
-                $smallestChainCount = $chain->count();
+            $chain->react();
+            if ($smallestChainCount === null || $smallestChainCount > $chain->length()) {
+                $smallestChainCount = $chain->length();
             }
             fwrite(STDOUT, " Done! (Smallest count: $smallestChainCount)\n");
         }
@@ -42,111 +42,39 @@ class DayFive
 }
 
 
-class Unit
-{
-    public $value;
-    public $next;
-    public $prev;
-
-    public function __construct($char)
-    {
-        $this->value = ord($char);
-        $this->next = null;
-        $this->prev = null;
-    }
-
-    public function reactsWithNext()
-    {
-        return abs($this->next->value - $this->value) === 32;
-    }
-}
-
 class Chain
 {
-    private $start;
-    private $end;
-    private $count;
+    private $source;
+    private $upperChars;
 
     public function __construct(string $source)
     {
-        $this->count = 0;
-
-        $this->attachFirst($source[0]);
-
-        for ($i = 1; $i < strlen($source); $i++) {
-            $this->attach($source[$i]);
-        }
+        $this->source = $source;
+        $this->upperChars = array_unique(str_split(strtoupper(getDayFiveInputs())));
     }
 
-    public function attachFirst(string $char)
+    public function react()
     {
-        $firstUnit = new Unit($char);
-        $this->start = $firstUnit;
-        $this->end = $firstUnit;
-        $this->count++;
-    }
+        $previousLength = strlen($this->source);
+        while(true)
+        {
+            foreach ($this->upperChars as $upper) {
+                $lower = strtolower($upper);
+                $regexPattern = "/($upper$lower|$lower$upper)+/";
+                $this->source = preg_replace($regexPattern, '', $this->source);
+            }
+            $newLength = strlen($this->source);
 
-    public function attach(string $char)
-    {
-        $unit = new Unit($char);
-        $unit->prev = $this->end;
-        $this->end->next = $unit;
-        $this->end = $unit;
-        $this->count++;
-    }
-
-    public function detach(Unit $unit)
-    {
-        $previousUnit = $unit->prev;
-        $nextUnit = $unit->next;
-
-        // If the unit was the first in the chain
-        if ($previousUnit === null) {
-            $nextUnit->prev = null;
-        } // If the unit was the last in the chain
-        elseif ($nextUnit === null) {
-            $previousUnit->next = null;
-        } // If the unit was not in one of the extremes
-        else {
-            $previousUnit->next = $nextUnit;
-            $nextUnit->prev = $previousUnit;
-        }
-
-        unset($unit);
-        $this->count--;
-    }
-
-    public function reactEverything()
-    {
-        do {
-            $reactionsInLoop = $this->reactiveTransverse();
-        } while ($reactionsInLoop !== 0);
-    }
-
-    public function reactiveTransverse()
-    {
-        $reactionsCount = 0;
-        $currentUnit = $this->start;
-
-        do {
-            if ($currentUnit->reactsWithNext()) {
-                $nextTarget = $currentUnit->next->next;
-                $this->detach($currentUnit->next);
-                $this->detach($currentUnit);
-
-                $reactionsCount++;
-            } else {
-                $nextTarget = $currentUnit->next;
+            if ($previousLength === $newLength) {
+                break;
             }
 
-            $currentUnit = $nextTarget;
-        } while ($currentUnit !== null && $currentUnit->next !== null);
-
-        return $reactionsCount;
+            $previousLength = $newLength;
+        }
     }
 
-    public function count()
+    public function length()
     {
-        return $this->count;
+        return strlen($this->source);
     }
 }
