@@ -1,4 +1,5 @@
 <?php
+include_once "Timer.php";
 
 // Auto-loading the answer classes
 spl_autoload_register(function ($class) {
@@ -6,14 +7,21 @@ spl_autoload_register(function ($class) {
     include "Answers/$class.php";
 });
 
+$fullTimer = new Timer();
+$fullTimer->start();
+
 // ------------------------------------------------------------
 // -- Instantiate whatever answer you want to execute here --
 // ------------------------------------------------------------
-$timeStart = microtime(true);
 $answer = new DayFive();
 
-fwrite(STDOUT, "First Star: {$answer->firstStar() }\n");
-fwrite(STDOUT, "Second Star: {$answer->secondStar() }\n");
+$functionTimer = new Timer();
+fwrite(STDOUT, "First Star: ");
+$functionTimer->start();
+fwrite(STDOUT, "Done! Answer = {$answer->firstStar()} ({$functionTimer->elapsed()} s)\n");
 
-$elapsedSeconds = microtime(true) - $timeStart;
-fwrite(STDOUT, "Total Execution Time: $elapsedSeconds\n");
+fwrite(STDOUT, "Second Star: ");
+$functionTimer->restart();
+fwrite(STDOUT, "Done!  Answer = {$answer->secondStar()}) ({$functionTimer->elapsed()} s)\n");
+
+fwrite(STDOUT, "Total Execution Time: {$fullTimer->elapsed()}s\n");
