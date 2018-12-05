@@ -9,7 +9,11 @@ spl_autoload_register(function ($class) {
 // ------------------------------------------------------------
 // -- Instantiate whatever answer you want to execute here --
 // ------------------------------------------------------------
-$answer = new DayFour();
+$timeStart = microtime(true);
+$answer = new DayFive();
 
-fwrite(STDOUT, "First Star: {$answer->firstStar()}\n");
-fwrite(STDOUT, "Second Star: {$answer->secondStar()}\n");
+fwrite(STDOUT, "First Star: {$answer->firstStar() }\n");
+fwrite(STDOUT, "Second Star: {$answer->secondStar() }\n");
+
+$elapsedSeconds = microtime(true) - $timeStart;
+fwrite(STDOUT, "Total Execution Time: $elapsedSeconds\n");
