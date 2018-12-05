@@ -1,3 +1,1 @@
-*.php
-!AdventOfCode.php
-!Inputs.php
+.DS_Store

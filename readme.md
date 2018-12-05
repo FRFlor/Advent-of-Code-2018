@@ -4,9 +4,9 @@ This is just my solutions for the [Advent of code](https://adventofcode.com) pro
 
 ## How do I run this?
 
-Each question is organized in a dedicated class, and all classes are defined in AdventOfCode.php. 
+Each question is organized in a dedicated class that is located in the Answers folder. 
 
-Even though in a regular situation each class would have its own file. I chose not to go for multiple files because I preferred to treat this game as a "quiz activity".
+The easiest way to try out the answers is to run the index.php file. 
 
 ## The questions 
 
