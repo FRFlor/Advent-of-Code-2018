@@ -13,14 +13,14 @@ $fullTimer->start();
 // ------------------------------------------------------------
 // -- Instantiate whatever answer you want to execute here --
 // ------------------------------------------------------------
-foreach (['DayOne', 'DayTwo', 'DayThree', 'DayFour', 'DayFive'] as $className) {
+foreach (['DaySix'] as $className) {
     fwrite(STDOUT, "====== $className ======\n\n");
     $answer = new $className();
 
     $functionTimer = new Timer();
     fwrite(STDOUT, "First Star: ");
     $functionTimer->start();
-    fwrite(STDOUT, "Done! Answer = {$answer->firstStar()} ({$functionTimer->elapsed()} s)\n");
+//    fwrite(STDOUT, "Done! Answer = {$answer->firstStar()} ({$functionTimer->elapsed()} s)\n");
 
     fwrite(STDOUT, "Second Star: ");
     $functionTimer->restart();

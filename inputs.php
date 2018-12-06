@@ -3870,3 +3870,15 @@ function getDaySixInputs()
         [87, 335],
     ];
 }
+
+function debugInputs()
+{
+    return [
+        [1, 1],
+        [1, 6],
+        [8, 3],
+        [3, 4],
+        [5, 5],
+        [8, 9],
+    ];
+}
