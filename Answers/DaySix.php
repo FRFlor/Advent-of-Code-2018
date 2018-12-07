@@ -1,10 +1,5 @@
 <?php
 
-const DONT_BOTHER = -2;
-const DANGEROUS = -1;
-const SAFE_UNEXPLORED = 1;
-const ENQUEUED = 2;
-const SAFE_EXPLORED = 3;
 const SAFE_DISTANCE = 10000;
 
 class DaySix
@@ -23,10 +18,7 @@ class DaySix
 
     public function secondStar()
     {
-//        $this->grid->composeSafeAreaGrid();
-//        $this->grid->drawSafeAreaGrid();
         return $this->grid->getSafeAreaSize();
-//        return $this->grid->getLargestIslandArea();
     }
 }
 
@@ -44,11 +36,6 @@ class SpaceGrid
     private $coordinates;
 
     private $infiniteAreaCoordinatesIds;
-
-
-    private $safeAreaGrid;
-    private $safeAreasSizes;
-
 
     public function __construct($rawCoordinates)
     {
@@ -132,7 +119,6 @@ class SpaceGrid
         return $closestCoordinateId;
     }
 
-
     public function getSafeAreaSize()
     {
         $size = 0;
@@ -150,97 +136,4 @@ class SpaceGrid
 
         return $size;
     }
-
-    public function composeSafeAreaGrid()
-    {
-        for ($x = 0; $x <= $this->maxX; $x++) {
-            for ($y = 0; $y <= $this->maxY; $y++) {
-                $distance = 0;
-                foreach ($this->coordinates as $coordinate) {
-                    $distance += abs($coordinate[0] - $x) + abs($coordinate[1] - $y);
-                }
-                if ($distance < SAFE_DISTANCE) {
-                    $this->safeAreaGrid[$x][$y] = SAFE_UNEXPLORED;
-                }
-            }
-        }
-    }
-
-    public function drawSafeAreaGrid()
-    {
-        file_put_contents("out.txt", "");
-
-        for ($y = 0; $y <= $this->maxY; $y++) {
-            $row = "";
-            for ($x = 0; $x <= $this->maxX; $x++) {
-                $row .= (($this->safeAreaGrid[$x][$y] ?? DONT_BOTHER) === SAFE_UNEXPLORED) ? "#" : ".";
-            }
-            $row .= "\n";
-            file_put_contents("out.txt", $row, FILE_APPEND);
-        }
-    }
-
-    public function getLargestIslandArea()
-    {
-        // TODO: Transverse only on SAFE areas
-        foreach ($this->safeAreaGrid as $x => $columns) {
-            foreach ($columns as $y => $value) {
-                if ($value === SAFE_UNEXPLORED) {
-                    $this->exploreArea($x, $y);
-                }
-            }
-        }
-
-        return max($this->safeAreasSizes);
-    }
-
-    public function exploreArea($x, $y)
-    {
-        $this->safeAreaGrid[$x][$y] = SAFE_EXPLORED;
-
-        $areaSize = 1;
-        $toVisit = []; // TODO: Use Queue for optimization
-        $queuePointer = 0;
-
-        for ($dX = $x - 1; $dX <= $x + 1; $dX++) {
-            for ($dY = $y - 1; $dY <= $y + 1; $dY++) {
-                if ($dX < 0 || $dY < 0 || empty($this->safeAreaGrid[$dX][$dY])) {
-                    continue;
-                }
-                if ($this->safeAreaGrid[$dX][$dY] === SAFE_UNEXPLORED) {
-                    array_push($toVisit, [$dX, $dY]);
-                    $this->safeAreaGrid[$dX][$dY] = ENQUEUED;
-                }
-            }
-        }
-
-        for ($queuePointer = 0; $queuePointer < count($toVisit); $queuePointer++) {
-            $x = $toVisit[$queuePointer][0];
-            $y = $toVisit[$queuePointer][1];
-            $this->safeAreaGrid[$x][$y] = SAFE_EXPLORED;
-            $areaSize++;
-
-            for ($dX = $x - 1; $dX <= $x + 1; $dX++) {
-                for ($dY = $y - 1; $dY <= $y + 1; $dY++) {
-                    if ($dX < 0 || $dY < 0 || empty($this->safeAreaGrid[$dX][$dY])) {
-                        continue;
-                    }
-
-                    if ($this->safeAreaGrid[$dX][$dY] === SAFE_UNEXPLORED) {
-                        array_push($toVisit, [$dX, $dY]);
-                        $this->safeAreaGrid[$dX][$dY] = ENQUEUED;
-
-                        if (count($toVisit) > 5000) {
-                            $toVisit = array_splice($toVisit, 0, $queuePointer);
-                            $queuePointer = 0;
-                        }
-                    }
-                }
-            }
-        }
-
-        $this->safeAreasSizes[] += $areaSize;
-    }
 }
-
-// 14783

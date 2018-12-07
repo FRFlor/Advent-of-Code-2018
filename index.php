@@ -20,7 +20,7 @@ foreach (['DaySix'] as $className) {
     $functionTimer = new Timer();
     fwrite(STDOUT, "First Star: ");
     $functionTimer->start();
-//    fwrite(STDOUT, "Done! Answer = {$answer->firstStar()} ({$functionTimer->elapsed()} s)\n");
+    fwrite(STDOUT, "Done! Answer = {$answer->firstStar()} ({$functionTimer->elapsed()} s)\n");
 
     fwrite(STDOUT, "Second Star: ");
     $functionTimer->restart();
