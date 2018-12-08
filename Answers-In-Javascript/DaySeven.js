@@ -153,12 +153,11 @@ class DaySeven {
     }
 }
 
+const Support  = require('./Support.js');
+Support.Timer(() => {
+    let daySeven = new DaySeven();
+    console.log("First Star: " + daySeven.firstStar());
+    console.log("Second Star: " + daySeven.secondStar());
+});
 
-const {performance} = require('perf_hooks');
-var t0 = performance.now();
 
-let answer = ( new DaySeven() ).secondStar();
-console.log(answer);
-
-var t1 = performance.now();
-console.log('Executed in ' + ( t1 - t0 ) + ' milliseconds.');

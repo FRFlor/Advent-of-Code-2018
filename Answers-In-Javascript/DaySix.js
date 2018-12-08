@@ -139,17 +139,9 @@ function countOfMostFrequent(arr1) {
 }
 
 
-const { performance } = require('perf_hooks');
-
-var t0 = performance.now();
-
-
-a = new DaySix();
-
-console.log(a.firstStar());
-console.log(a.secondStar());
-
-var t1 = performance.now();
-console.log("Executed in " + (t1 - t0) + " milliseconds.")
-
-b = 0;
+const Support  = require('./Support.js');
+Support.Timer(() => {
+    let daySix = new DaySix();
+    console.log("First Star: " + daySix.firstStar());
+    console.log("Second Star: " + daySix.secondStar());
+});
