@@ -22,7 +22,6 @@ class Step {
     }
 }
 
-
 class Steps {
     constructor() {
         this.data = [];
@@ -49,25 +48,24 @@ class Steps {
     }
 
     availableSteps() {
-        return this.data.filter( step => step.isDoable() );
+        return this.data.filter(step => step.isDoable()).sort((a, b) => {
+            return ( a.name > b.name ) ? 1 : -1;
+        });
     }
 }
+
 
 class Worker {
     constructor() {
         this.workingOn = null;
     }
 
-    isAvailable() {
-        return this.workingOn === null;
-    }
-
-    workOn(step) {
+    assignTo(step) {
         this.workingOn = step;
         step.underWork = true;
     }
 
-    update() {
+    work() {
         if (this.workingOn !== null) {
             this.workingOn.workRemaining--;
             if (this.workingOn.workRemaining === 0) {
@@ -77,6 +75,35 @@ class Worker {
         }
     }
 }
+
+
+class WorkForce {
+    constructor(numberOfWorkers) {
+        this.workers = Array.from(Array(numberOfWorkers)).map(_ => new Worker());
+    }
+
+    availableWorkers() {
+        return this.workers.filter(worker => worker.workingOn === null);
+    }
+
+    assignWorkers(stepsAvailable) {
+        let availableWorkers = this.availableWorkers();
+        let stepIndex = 0;
+        let workerIndex = 0;
+        while (availableWorkers[workerIndex] && stepsAvailable[stepIndex]) {
+            let nextStep = stepsAvailable[stepIndex++];
+            let nextWorker = availableWorkers[workerIndex++];
+            nextWorker.assignTo(nextStep);
+        }
+    }
+
+    //  Work for a second
+    tick() {
+        this.workers.forEach(worker => worker.work());
+    }
+
+}
+
 
 class DaySeven {
     constructor() {
@@ -90,10 +117,7 @@ class DaySeven {
         let executionOrder = '';
 
         while (!this.steps.isComplete()) {
-            let availableSteps = this.steps.availableSteps();
-            let nextStep = availableSteps.sort((a, b) => {
-                return ( a.name > b.name ) ? 1 : -1;
-            })[0];
+            let nextStep = this.steps.availableSteps()[0];
 
             executionOrder += nextStep.name;
             nextStep.workRemaining = 0;
@@ -104,31 +128,18 @@ class DaySeven {
 
     secondStar() {
         this.getStepsDependencies();
-        this.workers = Array.from(Array(NUMBER_OF_WORKERS)).map( _ => new Worker());
+        this.workForce = new WorkForce(NUMBER_OF_WORKERS);
 
         let secondsElapsed = 0;
         while (!this.steps.isComplete()) {
-            secondsElapsed++;
-            let availableWorkers = this.workers.filter( worker => worker.workingOn === null );
             let availableSteps = this.steps.availableSteps();
-            while (availableWorkers.length > 0 && availableSteps.length > 0) {
-                let nextStep = availableSteps.sort((a, b) => {
-                    return ( a.name > b.name ) ? 1 : -1;
-                })[0];
-
-                let nextWorker = availableWorkers[0];
-                nextWorker.workOn(nextStep);
-
-                availableWorkers = this.workers.filter( worker => worker.workingOn === null );
-                availableSteps = this.steps.availableSteps();
-            }
-
-            this.workers.forEach(worker => worker.update());
+            this.workForce.assignWorkers(availableSteps);
+            this.workForce.tick();
+            secondsElapsed++;
         }
 
         return secondsElapsed;
     }
-
 
     getStepsDependencies() {
         this.steps = new Steps();
