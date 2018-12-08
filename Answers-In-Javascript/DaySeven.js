@@ -46,14 +46,7 @@ class Steps {
     }
 
     availableSteps() {
-        return this.data.reduce((availableSteps, step) => {
-            if (step.isDoable()) {
-                availableSteps.push(step);
-                return availableSteps;
-            }
-
-            return availableSteps;
-        }, []);
+        return this.data.filter( step => step.isDoable() );
     }
 }
 
@@ -96,7 +89,9 @@ class DaySeven {
 const {performance} = require('perf_hooks');
 var t0 = performance.now();
 
-console.log(( new DaySeven() ).firstStar());
+let expect = 'BFGKNRTWXIHPUMLQVZOYJACDSE';
+let answer = ( new DaySeven() ).firstStar();
+console.log(answer === expect);
 
 var t1 = performance.now();
 console.log('Executed in ' + ( t1 - t0 ) + ' milliseconds.');
