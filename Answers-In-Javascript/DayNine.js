@@ -6,6 +6,7 @@ class Marble {
     }
 }
 
+
 class Players {
     constructor(playerCount) {
         this.score = Array.from(Array(playerCount).keys()).map(_ => 0);
@@ -22,40 +23,20 @@ class Players {
             this.currentIndex = 0;
         }
     }
-
-    maxScore(){
-        return Math.max(this.score);
-    }
 }
+
 
 class CircleGame {
     constructor(playerCount) {
         this.players = new Players(playerCount);
-        this.zeroMarble = new Marble(0);
-        this.currentMarble = this.zeroMarble;
+        this.currentMarble = new Marble(0);
+
+        // It's a circle after all... even though it only has one element... LOL
         this.currentMarble.nextMarble = this.currentMarble;
         this.currentMarble.previousMarble = this.currentMarble;
     }
 
-    addMarble(newMarble) {
-        if (newMarble.number % 23 === 0) {
-            this.players.addScoreToCurrentPlayer(newMarble.number);
-            let targetForDeletion = this.currentMarble;
-            for (let i = 0; i < 7; i++) {
-                targetForDeletion = targetForDeletion.previousMarble;
-            }
-            this.players.addScoreToCurrentPlayer(targetForDeletion.number);
-            const marbleToLeft = targetForDeletion.previousMarble;
-            const marbleToRight = targetForDeletion.nextMarble;
-
-            marbleToLeft.nextMarble = marbleToRight;
-            marbleToRight.previousMarble = marbleToLeft;
-
-            this.currentMarble = marbleToRight;
-            this.players.nextTurn();
-            return;
-        }
-
+    linkMarble(newMarble) {
         const marbleToLeft = this.currentMarble.nextMarble;
         const marbleToRight = marbleToLeft.nextMarble;
 
@@ -63,21 +44,37 @@ class CircleGame {
         newMarble.nextMarble = marbleToRight;
         marbleToLeft.nextMarble = newMarble;
         marbleToRight.previousMarble = newMarble;
+    }
 
-        this.currentMarble = newMarble;
+    unlinkMarble(targetForDeletion) {
+        const marbleToLeft = targetForDeletion.previousMarble;
+        const marbleToRight = targetForDeletion.nextMarble;
+        marbleToLeft.nextMarble = marbleToRight;
+        marbleToRight.previousMarble = marbleToLeft;
+    }
+
+    playMarble(newMarble) {
+        if (newMarble.number % 23 === 0) {
+            this.players.addScoreToCurrentPlayer(newMarble.number);
+            // Delete the marble 7 positions to the left of the current marble
+            // Add its value to player
+            let targetForDeletion = this.currentMarble;
+            for (let i = 0; i < 7; i++) {
+                targetForDeletion = targetForDeletion.previousMarble;
+            }
+            this.players.addScoreToCurrentPlayer(targetForDeletion.number);
+            this.unlinkMarble(targetForDeletion);
+            this.currentMarble = targetForDeletion.nextMarble;
+        } else {
+            this.linkMarble(newMarble);
+            this.currentMarble = newMarble;
+        }
+
         this.players.nextTurn();
     }
 
-    printCircle() {
-        let currentMarble = this.zeroMarble;
-        do {
-            console.log(currentMarble.number);
-            currentMarble = currentMarble.nextMarble;
-        } while (currentMarble.number !== this.zeroMarble.number);
-    }
-
-    getScore(){
-        return Math.max(...this.players.score)
+    getScore() {
+        return Math.max(...this.players.score);
     }
 }
 
@@ -92,7 +89,7 @@ class DayNine {
     firstStar() {
         let circle = new CircleGame(this.playerCount);
         for (let i = 1; i <= this.marblesCount; i++) {
-            circle.addMarble(new Marble(i));
+            circle.playMarble(new Marble(i));
         }
 
         return circle.getScore();
@@ -100,8 +97,8 @@ class DayNine {
 
     secondStar() {
         let circle = new CircleGame(this.playerCount);
-        for (let i = 1; i <= this.marblesCount*100; i++) {
-            circle.addMarble(new Marble(i));
+        for (let i = 1; i <= this.marblesCount * 100; i++) {
+            circle.playMarble(new Marble(i));
         }
 
         return circle.getScore();
@@ -113,5 +110,5 @@ const Support = require('./Support.js');
 Support.Timer(() => {
     let dayEight = new DayNine(require('./DayNineInput'));
     console.log('First Star: ' + dayEight.firstStar());
-    console.log("Second Star: " + dayEight.secondStar());
+    console.log('Second Star: ' + dayEight.secondStar());
 });
