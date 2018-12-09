@@ -1,7 +1,29 @@
 class Node {
-    constructor(children, metaData) {
+    constructor(children, metadata) {
         this.children = children;
-        this.metaData = metaData;
+        this.metadata = metadata;
+    }
+
+    getMetadataSum() {
+        return this.metadata.reduce( function (total, metaValue) {
+            return total + metaValue;
+        }, 0);
+    }
+
+    getValue() {
+        if (this.children.length === 0) {
+            return this.getMetadataSum();
+        }
+
+        let value = 0;
+        for(let i = 0; i < this.metadata.length; i++) {
+            const childIndex = this.metadata[i] - 1;
+            const childValue = (this.children[childIndex] === undefined) ? 0 : this.children[childIndex].getValue();
+
+            value += childValue;
+        }
+
+        return value;
     }
 }
 
@@ -37,27 +59,26 @@ class NodeManager {
         this.nodes.push(newNode);
         return newNode;
     }
+
+    getRootNode() {
+        return this.nodes[this.nodes.length-1];
+    }
 }
 
 class DayEight {
     constructor() {
         this.nodeManager = new NodeManager(require('./DayEightInput'));
+        this.nodeManager.buildAllNodes();
     }
 
     firstStar() {
-        this.nodeManager.buildAllNodes();
-
         return this.nodeManager.nodes.reduce(function(totalMetadata, node) {
-            const nodeTotalMetadata = node.metaData.reduce(function(nodeMetadataSum, metadata) {
-                return nodeMetadataSum + metadata;
-            }, 0);
-
-            return totalMetadata + nodeTotalMetadata;
+            return totalMetadata + node.getMetadataSum();
         }, 0)
     }
 
     secondStar() {
-        return "";
+        return this.nodeManager.getRootNode().getValue();
     }
 }
 
