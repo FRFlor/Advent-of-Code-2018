@@ -1,5 +1,3 @@
-const MAXIMUM_EXPECTED_FONT_SIZE = 50;
-
 class Star {
     constructor(x, y, vx, vy) {
         this.position = { x: parseInt(x), y: parseInt(y) };
@@ -20,23 +18,6 @@ class DayTen {
             const m = input[i].match(/position=<\s*(\-?\d+),\s*(\-?\d+)> velocity=<\s*(\-?\d+),\s*(\-?\d+)>/);
             this.stars[i] = new Star(m[1]-1, m[2]-1, m[3], m[4]);
         }
-
-        this.normalizeStars();
-    }
-
-    normalizeStars() {
-        this.minX =  Math.min(...this.stars.map( star => star.position.x ));
-        this.minY =  Math.min(...this.stars.map( star => star.position.y ));
-
-        for (let i = 0; i < this.stars.length; i++){
-            this.stars[i].position.x -= this.minX;
-            this.stars[i].position.y -= this.minY;
-        }
-
-        this.minX = 0;
-        this.minY = 0;
-        this.maxX =  Math.max(...this.stars.map( star => star.position.x )) + 1;
-        this.maxY =  Math.max(...this.stars.map( star => star.position.y )) + 1;
     }
 
     update() {
@@ -44,8 +25,6 @@ class DayTen {
         for(let i = 0; i < this.stars.length; i ++) {
             this.stars[i].update();
         }
-
-        this.normalizeStars();
     }
 
     // The message guaranteed to not be ready if there are rogue stars still.
@@ -61,11 +40,23 @@ class DayTen {
         return true;
     }
 
+    calculateEdges() {
+        let coordsX = this.stars.map( star => star.position.x );
+        let coordsY = this.stars.map( star => star.position.y );
+
+        this.minX =  Math.min(...coordsX);
+        this.minY =  Math.min(...coordsY);
+        this.maxX =  Math.max(...coordsX);
+        this.maxY =  Math.max(...coordsY);
+    }
+
     render() {
+        this.calculateEdges();
+
         let result = "\n";
-        for (let y = 0; y < this.maxY; y++) {
+        for (let y = this.minY; y <= this.maxY; y++) {
             let line = "";
-            for (let x = 0; x < this.maxX; x++) {
+            for (let x = this.minX; x <= this.maxX; x++) {
                 let star = this.stars.find( star => star.position.x === x && star.position.y === y);
                 line += (star === undefined) ? '.' : '#';
             }
@@ -78,7 +69,8 @@ class DayTen {
     firstStar() {
         do {
             this.update();
-        } while (this.maxY > MAXIMUM_EXPECTED_FONT_SIZE || ! this.isMessageReady());
+        } while (! this.isMessageReady());
+
         return this.render();
     }
 
