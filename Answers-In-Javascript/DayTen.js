@@ -1,4 +1,4 @@
-const fs = require('fs');
+const FONT_SIZE = 10;
 
 class Star {
     constructor(x, y, vx, vy) {
@@ -11,6 +11,7 @@ class Star {
         this.position.y += this.speed.y;
     }
 }
+
 class DayTen {
     constructor(input) {
         this.stars = new Array(input.length);
@@ -20,16 +21,16 @@ class DayTen {
             this.stars[i] = new Star(m[1]-1, m[2]-1, m[3], m[4]);
         }
 
-        this.minX =  Math.min(...this.stars.map( star => star.position.x )) - 5;
-        this.minY =  Math.min(...this.stars.map( star => star.position.y )) - 5;
+        this.minX =  Math.min(...this.stars.map( star => star.position.x )) - 1;
+        this.minY =  Math.min(...this.stars.map( star => star.position.y )) - 1;
 
         for (let i = 0; i < this.stars.length; i++){
             this.stars[i].position.x -= this.minX;
             this.stars[i].position.y -= this.minY;
         }
 
-        this.maxX =  Math.max(...this.stars.map( star => star.position.x )) + 5;
-        this.maxY =  Math.max(...this.stars.map( star => star.position.y )) + 5;
+        this.maxX =  Math.max(...this.stars.map( star => star.position.x )) + 1;
+        this.maxY =  Math.max(...this.stars.map( star => star.position.y ));
     }
 
     update() {
@@ -38,44 +39,41 @@ class DayTen {
             this.stars[i].update();
         }
 
-        this.minX =  Math.min(...this.stars.map( star => star.position.x )) - 5;
-        this.minY =  Math.min(...this.stars.map( star => star.position.y )) - 5;
+        this.minX =  Math.min(...this.stars.map( star => star.position.x )) -1;
+        this.minY =  Math.min(...this.stars.map( star => star.position.y ));
 
         for (let i = 0; i < this.stars.length; i++){
             this.stars[i].position.x -= this.minX;
             this.stars[i].position.y -= this.minY;
         }
 
-        this.maxX =  Math.max(...this.stars.map( star => star.position.x )) + 5;
-        this.maxY =  Math.max(...this.stars.map( star => star.position.y )) + 5;
+        this.maxX =  Math.max(...this.stars.map( star => star.position.x )) + 1;
+        this.maxY =  Math.max(...this.stars.map( star => star.position.y )) + 1;
     }
 
     render() {
-        if (this.maxX > 80 || this.maxY > 80) {
-            return;
-        }
-        fs.writeFileSync('temp.txt', '');
+        let result = "\n";
         for (let y = 0; y < this.maxY; y++) {
             let line = "";
             for (let x = 0; x < this.maxX; x++) {
                 let star = this.stars.find( star => star.position.x === x && star.position.y === y);
                 line += (star === undefined) ? '.' : '#';
             }
-            fs.writeFileSync('temp.txt', line + '\n', {flag: 'a'});
+            result += line + "\n";
         }
+
+        return result;
     }
 
     firstStar() {
-        while(true) {
-            this.render();
+        do {
             this.update();
-        }
-
-        return  "";
+        } while (this.maxY > FONT_SIZE);
+        return this.render();
     }
 
     secondStar() {
-        return "";
+        return this.seconds;
     }
 }
 
