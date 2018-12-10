@@ -1,4 +1,4 @@
-const FONT_SIZE = 10;
+const MAXIMUM_EXPECTED_FONT_SIZE = 50;
 
 class Star {
     constructor(x, y, vx, vy) {
@@ -48,6 +48,19 @@ class DayTen {
         this.normalizeStars();
     }
 
+    // The message guaranteed to not be ready if there are rogue stars still.
+    // A rogue star being a star that is alone in its row.
+    isMessageReady() {
+        for (let i = 0; i < this.stars.length; i++) {
+            let star = this.stars[i];
+            if (this.stars.filter( matches => matches.position.y === star.position.y).length === 1) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     render() {
         let result = "\n";
         for (let y = 0; y < this.maxY; y++) {
@@ -65,8 +78,7 @@ class DayTen {
     firstStar() {
         do {
             this.update();
-        } while (this.maxY > FONT_SIZE);
-
+        } while (this.maxY > MAXIMUM_EXPECTED_FONT_SIZE || ! this.isMessageReady());
         return this.render();
     }
 
