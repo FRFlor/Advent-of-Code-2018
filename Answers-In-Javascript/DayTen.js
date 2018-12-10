@@ -21,16 +21,22 @@ class DayTen {
             this.stars[i] = new Star(m[1]-1, m[2]-1, m[3], m[4]);
         }
 
-        this.minX =  Math.min(...this.stars.map( star => star.position.x )) - 1;
-        this.minY =  Math.min(...this.stars.map( star => star.position.y )) - 1;
+        this.normalizeStars();
+    }
+
+    normalizeStars() {
+        this.minX =  Math.min(...this.stars.map( star => star.position.x ));
+        this.minY =  Math.min(...this.stars.map( star => star.position.y ));
 
         for (let i = 0; i < this.stars.length; i++){
             this.stars[i].position.x -= this.minX;
             this.stars[i].position.y -= this.minY;
         }
 
+        this.minX = 0;
+        this.minY = 0;
         this.maxX =  Math.max(...this.stars.map( star => star.position.x )) + 1;
-        this.maxY =  Math.max(...this.stars.map( star => star.position.y ));
+        this.maxY =  Math.max(...this.stars.map( star => star.position.y )) + 1;
     }
 
     update() {
@@ -39,16 +45,7 @@ class DayTen {
             this.stars[i].update();
         }
 
-        this.minX =  Math.min(...this.stars.map( star => star.position.x )) -1;
-        this.minY =  Math.min(...this.stars.map( star => star.position.y ));
-
-        for (let i = 0; i < this.stars.length; i++){
-            this.stars[i].position.x -= this.minX;
-            this.stars[i].position.y -= this.minY;
-        }
-
-        this.maxX =  Math.max(...this.stars.map( star => star.position.x )) + 1;
-        this.maxY =  Math.max(...this.stars.map( star => star.position.y )) + 1;
+        this.normalizeStars();
     }
 
     render() {
@@ -69,6 +66,7 @@ class DayTen {
         do {
             this.update();
         } while (this.maxY > FONT_SIZE);
+
         return this.render();
     }
 
