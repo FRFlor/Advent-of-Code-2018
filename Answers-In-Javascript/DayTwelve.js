@@ -1,8 +1,8 @@
 class Pot {
-    constructor(value, number = null) {
+    constructor(contents, number = null) {
         this.prev = null;
         this.next = null;
-        this.value = value;
+        this.contents = contents;
         this.number = number;
     }
 
@@ -18,17 +18,17 @@ class Pot {
         this.number = pot.number - 1;
     }
 
-    neighborValue(shift) {
+    neighborContents(shift) {
         try {
             switch (shift) {
                 case 1:
-                    return this.next.value;
+                    return this.next.contents;
                 case 2:
-                    return this.next.next.value;
+                    return this.next.next.contents;
                 case -1:
-                    return this.prev.value;
+                    return this.prev.contents;
                 case -2:
-                    return this.prev.prev.value;
+                    return this.prev.prev.contents;
             }
         }
         catch (e) {
@@ -38,8 +38,8 @@ class Pot {
     }
 
     getState() {
-        return ( this.neighborValue(-2) + this.neighborValue(-1) + this.value +
-            this.neighborValue(1) + this.neighborValue(2) );
+        return ( this.neighborContents(-2) + this.neighborContents(-1) + this.contents +
+            this.neighborContents(1) + this.neighborContents(2) );
     }
 }
 
@@ -81,13 +81,13 @@ class DayTwelve {
     padGeneration() {
         let pot = null;
 
-        while (!( this.start.value === '.' && this.start.next.value === '.' )) {
+        while (!( this.start.contents === '.' && this.start.next.contents === '.' )) {
             pot = new Pot('.');
             pot.attachToLeftOf(this.start);
             this.start = pot;
         }
 
-        while (!( this.end.value === '.' && this.end.prev.value === '.' )) {
+        while (!( this.end.contents === '.' && this.end.prev.contents === '.' )) {
             pot = new Pot('.');
             pot.attachToRightOf(this.end);
             this.end = pot;
@@ -106,10 +106,10 @@ class DayTwelve {
 
     printPots() {
         let pot = this.start;
-        let str = pot.value;
+        let str = pot.contents;
         while (pot.next !== null) {
             pot = pot.next;
-            str += pot.value;
+            str += pot.contents;
         }
 
         return str;
@@ -139,10 +139,10 @@ class DayTwelve {
     totalValue() {
         let pot = this.start;
 
-        let count = ( pot.value === '#' ) ? pot.number : 0;
+        let count = ( pot.contents === '#' ) ? pot.number : 0;
         while (pot.next !== null) {
             pot = pot.next;
-            count += ( pot.value === '#' ) ? pot.number : 0;
+            count += ( pot.contents === '#' ) ? pot.number : 0;
         }
 
         return count;
@@ -178,10 +178,9 @@ class DayTwelve {
             }
         } while (stabilityCount < 50);
 
-        return ( 50000000000 - this.generation ) * 58 + vf;
+        return ( 50E9 - this.generation ) * deltaf + vf;
     }
 }
-
 
 const Support = require('./Support.js');
 Support.Timer(() => {
